@@ -255,7 +255,7 @@ def loadKitti2015():
 
 
 class SiameseBranch(nn.Module):
-    def __init__(self,img_ch=1):
+    def __init__(self,img_ch=3):
         super(SiameseBranch,self).__init__()
         
         self.Tanh = nn.Tanh()        
@@ -287,7 +287,6 @@ class SiameseBranch(nn.Module):
         d4 = torch.cat((x1,x2,x3,x4),dim=1)
         
         x5 = self.Conv5(d4)
-        x5 = self.Tanh(x5)
         
         return x5
     
@@ -369,28 +368,27 @@ cos = torch.nn.CosineSimilarity()
 
 def getBatch():
     
-    ridx = np.random.randint(0,len(left_list),1)
-    
-    cur_left = left_list[ridx[0]]
-    cur_right = right_list[ridx[0]]
-    gt_im = gt_list[ridx[0]]
-    
-    #convert to grayscale
-    left_im = np.mean(cur_left, axis = 2) 
-    right_im = np.mean(cur_right, axis = 2) 
-    
-    batch_xl = np.zeros((batch_size,patch_size,patch_size))
-    batch_xr_pos = np.zeros((batch_size,patch_size,patch_size))
-    batch_xr_neg = np.zeros((batch_size,patch_size,patch_size))
+    batch_xl = np.zeros((batch_size,3,patch_size,patch_size))
+    batch_xr_pos = np.zeros((batch_size,3,patch_size,patch_size))
+    batch_xr_neg = np.zeros((batch_size,3,patch_size,patch_size))
     
     for el in range(batch_size):
         
+        if(el % 25 == 0):
+            
+            ridx = np.random.randint(0,len(left_list),1)
+            left_im = left_list[ridx[0]]
+            right_im = right_list[ridx[0]]
+            gt_im = gt_list[ridx[0]]
+
+        
         #get random position
-        h,w = left_im.shape
+        h,w,c = left_im.shape
         r_h = 0
         r_w = 0
         d = 0
-        #Draw for random position
+#        print('Draw for random position')
+        #also check height! should not draw corner pixels!!
         while True:
             r_h = random.sample(range(ps_h,h-(ps_h+1)), 1)
             r_w = random.sample(range(ps_h,w-(ps_h+1)),1)            
@@ -402,15 +400,17 @@ def getBatch():
         
         d = int(np.round(gt_im[r_h,r_w]))
                 
-        cur_left = left_im[r_h[0]-ps_h:r_h[0]+(ps_h+1), r_w[0]-ps_h:r_w[0]+(ps_h+1)]
+        cur_left = left_im[r_h[0]-ps_h:r_h[0]+(ps_h+1), r_w[0]-ps_h:r_w[0]+(ps_h+1),:]
         #choose offset
         
         o_pos = 0                
-        cur_right_pos = right_im[r_h[0]-ps_h:r_h[0]+(ps_h+1), (r_w[0]-ps_h-d+o_pos):(r_w[0]+(ps_h+1)-d+o_pos)]
+        cur_right_pos = right_im[r_h[0]-ps_h:r_h[0]+(ps_h+1), (r_w[0]-ps_h-d+o_pos):(r_w[0]+(ps_h+1)-d+o_pos),:]
+
         
-        #get negativ patch with random offset withing [r_low,r_high], 50/50 chance if it is off to the left or right
+        #should not be too close to real match!
         o_neg = 0
         while True:
+            #range 6-8??? range(2,6)
             o_neg = random.sample(range(r_low,r_high), 1)
             if np.random.randint(-1, 1) == -1:
                 o_neg = -o_neg[0]
@@ -420,18 +420,14 @@ def getBatch():
             if((o_neg != d) and ((r_w[0]-ps_h-d+o_neg) > 0)  and ((r_w[0]+(ps_h+1)-d+o_neg) < w)):
                 break
         
-        cur_right_neg = right_im[r_h[0]-ps_h:r_h[0]+(ps_h+1), (r_w[0]-ps_h-d+o_neg):(r_w[0]+(ps_h+1)-d+o_neg)]
+        
+        cur_right_neg = right_im[r_h[0]-ps_h:r_h[0]+(ps_h+1), (r_w[0]-ps_h-d+o_neg):(r_w[0]+(ps_h+1)-d+o_neg),:]
 
         
-        batch_xl[el,:,:] = cur_left
-        batch_xr_pos[el,:,:] = cur_right_pos
-        batch_xr_neg[el,:,:] = cur_right_neg     
-        
-        
-    batch_xl = np.reshape(batch_xl, [batch_size,1,patch_size,patch_size])
-    batch_xr_pos = np.reshape(batch_xr_pos, [batch_size,1,patch_size,patch_size])
-    batch_xr_neg = np.reshape(batch_xr_neg, [batch_size,1,patch_size,patch_size])
-    
+        batch_xl[el,:,:,:] =  np.transpose(cur_left, (2,0,1)).astype(np.uint8)
+        batch_xr_pos[el,:,:,:] = np.transpose(cur_right_pos, (2,0,1)).astype(np.uint8)
+        batch_xr_neg[el,:,:,:] = np.transpose(cur_right_neg, (2,0,1)).astype(np.uint8)
+            
     return batch_xl, batch_xr_pos, batch_xr_neg
 
 

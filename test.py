@@ -41,7 +41,7 @@ def main():
 
 num_conv_feature_maps = 64
 class SiameseBranch(nn.Module):
-    def __init__(self,img_ch=1):
+    def __init__(self,img_ch=3):
         super(SiameseBranch,self).__init__()
         
         self.Tanh = nn.Tanh()        
@@ -73,7 +73,6 @@ class SiameseBranch(nn.Module):
         d4 = torch.cat((x1,x2,x3,x4),dim=1)
         
         x5 = self.Conv5(d4)
-        x5 = self.Tanh(x5)
         
         return x5
     
@@ -261,13 +260,13 @@ def filterCostVolBilat(cost_vol,left):
 def createCostVol(left_im,right_im,max_disp):
     
     print('Creating cost-volume....')
-    left_im = np.mean(left_im, axis=2)
-    right_im = np.mean(right_im, axis=2)
-            
-    a_h, a_w = left_im.shape
+    a_h, a_w,c = left_im.shape
 
-    left_im = np.reshape(left_im, [1,1,a_h,a_w])
-    right_im = np.reshape(right_im, [1,1,a_h,a_w])
+    left_im = np.transpose(left_im, (2,0,1)).astype(np.uint8)
+    right_im = np.transpose(right_im, (2,0,1)).astype(np.uint8)
+    
+    left_im = np.reshape(left_im, [1,c,a_h,a_w])
+    right_im = np.reshape(right_im, [1,c,a_h,a_w])
     
     with torch.no_grad():
 
@@ -304,13 +303,13 @@ def createCostVol(left_im,right_im,max_disp):
 def createCostVolRL(left_im,right_im,max_disp):
 
     print('Create cost-volume right-to-left...')
-    left_im = np.mean(left_im, axis=2)
-    right_im = np.mean(right_im, axis=2)
+    a_h, a_w,c = left_im.shape
 
-    a_h, a_w = left_im.shape
-
-    left_im = np.reshape(left_im, [1,1,a_h,a_w])
-    right_im = np.reshape(right_im, [1,1,a_h,a_w])
+    left_im = np.transpose(left_im, (2,0,1)).astype(np.uint8)
+    right_im = np.transpose(right_im, (2,0,1)).astype(np.uint8)
+    
+    left_im = np.reshape(left_im, [1,c,a_h,a_w])
+    right_im = np.reshape(right_im, [1,c,a_h,a_w])
 
     with torch.no_grad():
         left_imT = Variable(Tensor(left_im))
