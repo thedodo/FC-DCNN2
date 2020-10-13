@@ -1,6 +1,6 @@
 # FC-DCNN2
 Updated version of the FC-DCNN network
-
+## !!!!!!!!!!!UNDER CONSTRUCTION!!!!!!!!!!!
 The updates to the network are as follows: 
 
 - color-patches are used instead of grayscale patches. This increases the complexity by about +1k parameters.
