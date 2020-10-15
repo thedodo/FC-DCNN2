@@ -29,6 +29,7 @@ A demo of the new network is available online in Google Colab.
 [Demo](https://colab.research.google.com/drive/1hET6tD_WxM7ZPHNPEHtAec2IKXrIZu6n#scrollTo=AgmCwQW7wpi9)
 
 Demo Video of the MPI dataset:
+
 [![Sintel Demo Video](https://img.youtube.com/vi/U70bsypa96g/hqdefault.jpg)](https://youtu.be/U70bsypa96g)
 
 The whole project is in pure python 3.6.
