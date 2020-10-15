@@ -25,8 +25,8 @@ An pytorch implementation of a lightweight fully-convolutional densely connected
 This method has been accepted and will be published at the **ICPR 2020** conference. If you use our work please cite our 
 [paper](https://arxiv.org/abs/2010.06950)
 
-A demo of this network is available online in Google Colab. 
-[Demo](https://colab.research.google.com/drive/1i5k-YTCsmQC8IIURBh802oKeyZP_ZSHG)
+A demo of the new network is available online in Google Colab. 
+[Demo](https://colab.research.google.com/drive/1hET6tD_WxM7ZPHNPEHtAec2IKXrIZu6n#scrollTo=AgmCwQW7wpi9)
 
 The whole project is in pure python 3.6.
 
