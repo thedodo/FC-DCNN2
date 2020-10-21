@@ -370,7 +370,7 @@ def LR_Check(first_output, second_output):
 def FillIncons(mask, disp):
 
     #limit for consistent point search
-    max_search = 30
+    max_search = 300
     w = mask.shape[1]
     h = mask.shape[0] 
     
@@ -489,9 +489,6 @@ def TestImage(fn_left, fn_right, max_disp, im_to_save, filtered = True, lr_check
         
         cost_vol = createCostVol(left,right,max_disp)
         cost_vol = filterCostVolMedian(cost_vol) 
-        cost_vol = filterCostVolMedian(cost_vol) 
-        cost_vol = filterCostVolMedian(cost_vol)
-        cost_vol = filterCostVolMedian(cost_vol)
         
         cost_vol_filteredn = filterCostVolBilat(cost_vol,left)
         cost_vol_filteredn = np.squeeze(cost_vol_filteredn.cpu().data.numpy())        
@@ -500,9 +497,6 @@ def TestImage(fn_left, fn_right, max_disp, im_to_save, filtered = True, lr_check
         writePFM(im_to_save + '.pfm', disp.astype(np.float32), scale=1)                
         if(lr_check):
             cost_vol_RL = createCostVolRL(left,right,max_disp)
-            cost_vol_RL = filterCostVolMedian(cost_vol_RL)
-            cost_vol_RL = filterCostVolMedian(cost_vol_RL)   
-            cost_vol_RL = filterCostVolMedian(cost_vol_RL)
             cost_vol_RL = filterCostVolMedian(cost_vol_RL)
             
             cost_vol_RL_fn = filterCostVolBilat(cost_vol_RL,right)
@@ -542,14 +536,9 @@ def TestImage(fn_left, fn_right, max_disp, im_to_save, filtered = True, lr_check
         thresh = cv2.threshold(gray, 0, 1,
         cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
-        kernel = np.ones((5,5), np.uint8)
+        cv2.imwrite(im_to_save + 'bilat_and_med_mask.png',thresh * 255)
 
-        dilation = cv2.dilate(thresh,kernel,iterations = 3)
-        mask = cv2.erode(dilation, kernel, iterations=2)    
-
-        cv2.imwrite(im_to_save + 'bilat_and_med_mask.png',mask * 255)
-
-        disp_filled = FillIncons(mask, disp)
+        disp_filled = FillIncons(thresh, disp)
         writePFM(im_to_save + '_filled.pfm',disp_filled)
     return disp_map, disp
 
